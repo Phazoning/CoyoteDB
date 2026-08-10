@@ -50,7 +50,7 @@ impl WindowsTPM{
 }
 
 pub struct TPM {
-    platform: Box<WindowsTPM, global>
+    platform: Box<WindowsTPM>
 }
 
 impl TPM {

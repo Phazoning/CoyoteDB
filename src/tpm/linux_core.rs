@@ -48,7 +48,7 @@ impl LinuxTPM {
 
 
 pub struct TPM {
-    platform: Box<LinuxTPM, global>,
+    platform: Box<LinuxTPM>,
 }
 
 impl TPM {
