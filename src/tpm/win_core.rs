@@ -19,8 +19,8 @@ impl WindowsTPM{
                 self.context,
                 TBS_COMMAND_LOCALITY_ZERO,
                 TBS_COMMAND_PRIORITY_NORMAL,
-                command.bytes().as_ptr(),
-                command.bytes().len() as u32,
+                command.get_self_buffer().as_ptr(),
+                command.get_self_buffer().len() as u32,
                 response.as_mut_ptr(),
                 &mut response_size,
             ).map_err(|e| CustomError {
@@ -37,7 +37,7 @@ impl WindowsTPM{
         let params = TBS_CONTEXT_PARAMS2 { version: 2, ..Default::default() };
 
         unsafe {
-            Tbsi_Context_Create(&params as *const _ as *const _, &mut context)
+            Tbsi_Context_Create(&params as *const _ as *const _, &mut local_context)
                 .map_err(|e| CustomError {
                     err_type: ErrorType::PlatformError,
                     err_content: e.to_string(),
