@@ -1,4 +1,4 @@
-use windows::Windows::Win32::Security::Tpm::*;
+use windows::Win32::Security::Tpm::*;
 
 use crate::buffer::buffer::Buffer;
 use crate::errors::errors::{ErrorType, CustomError};
@@ -19,12 +19,12 @@ impl WindowsTPM{
                 self.context,
                 TBS_COMMAND_LOCALITY_ZERO,
                 TBS_COMMAND_PRIORITY_NORMAL,
-                buffer.bytes().as_ptr(),
-                buffer.bytes().len() as u32,
+                command.bytes().as_ptr(),
+                command.bytes().len() as u32,
                 response.as_mut_ptr(),
                 &mut response_size,
             ).map_err(|e| CustomError {
-                err_type: ErrorType.WrittingError,
+                err_type: ErrorType::WrittingError,
                 err_content: e.to_string()
             })?;
         }
@@ -39,12 +39,12 @@ impl WindowsTPM{
         unsafe {
             Tbsi_Context_Create(&params as *const _ as *const _, &mut context)
                 .map_err(|e| CustomError {
-                    err_type: ErrorType.PlatformError,
+                    err_type: ErrorType::PlatformError,
                     err_content: e.to_string(),
                 })?;
         }
 
-        self.context = context;
+        self.context = local_context;
         Ok(())
     }
 }
