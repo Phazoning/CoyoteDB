@@ -1,5 +1,5 @@
 use windows::Win32::Security::Tpm::*;
-
+use windows::Win32::System::TpmBaseServices::{TBS_COMMAND_LOCALITY_ZERO, TBS_COMMAND_PRIORITY_NORMAL, TBS_CONTEXT_PARAMS2, Tbsi_Context_Create, Tbsip_Submit_Command};
 use crate::buffer::buffer::Buffer;
 use crate::errors::errors::{ErrorType, CustomError};
 use super::command_functions as c_func;
@@ -59,7 +59,7 @@ impl TPM {
 
         let mut platform= Box::new(WindowsTPM{context: std::ptr::null_mut()});
         
-        platform.load_platform().map_err(|e| CustomError { err_type: ErrorType::PlatformError, err_content: "unable to load platform".to_string() })?;
+        platform.load_platform().map_err(|e| CustomError { err_type: ErrorType::PlatformError, err_content: e.to_string() })?;
 
         let tpm_device = TPM{platform: platform};
 

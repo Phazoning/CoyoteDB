@@ -1,10 +1,12 @@
+use crate::errors::errors::CustomError;
+
 mod tpm;
 mod buffer;
 mod errors;
 mod aux_types;
 
 fn main() {
-    let tpm_device = tpm::TPM::new();
+    let tpm_device = tpm::TPM::new().map_err(|e| {e})?;
 
     let num = tpm_device.generate_random_number();
 
