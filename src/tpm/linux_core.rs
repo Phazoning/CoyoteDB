@@ -5,7 +5,7 @@ use std::{fs::{OpenOptions, File}, io::{Read, Write}};
 
 
 struct LinuxTPM {
-    device: Option<File>,
+    device: File,
 }
 
 impl LinuxTPM {
@@ -25,15 +25,16 @@ impl LinuxTPM {
 
         Ok(Buffer::from_vec(response[..n].to_vec()))
     }
-    fn load_platform(&mut self) -> Result<(), CustomError>{
-        let device = OpenOptions::new()
+    fn new() -> Result<Self, CustomError> {
+        let device_file = OpenOptions::new()
             .read(true)
             .write(true)
             .open("/dev/tpm0");
-        match device {
+
+        match device_file {
             Ok(file) => {
-                self.device = Some(file);
-                return Ok(())
+                Ok(LinuxTPM { device: file })
+
             }
             Err(error) => {
                 Err(CustomError{
@@ -55,16 +56,17 @@ impl TPM {
 
     pub fn new() -> Result<Self, CustomError>{
 
-        let mut platform = Box::new(LinuxTPM{device: None});
+        let tpm_platform = LinuxTPM::new();
 
+        match tpm_platform {
+            Ok(platform) => {
 
-        
-        platform.load_platform().map_err(|e| CustomError { err_type: ErrorType::PlatformError, err_content: "unable to load platform".to_string() })?;
-
-        let tpm_device = TPM{platform: platform};
-
-
-        Ok(tpm_device)
+                return Ok(TPM{platform: Box::new(platform)});
+            }
+            Err(error) => {
+                return Err(error)
+            }
+        }
     }
 
     fn execute(&mut self, buffer: Buffer) -> Result<Buffer, CustomError> {
