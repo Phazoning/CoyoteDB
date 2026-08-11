@@ -23,10 +23,10 @@ impl WindowsTPM{
                 &mut response_size,
             );
 
-            if written = 0 {
+            if written == 0 {
                 return Err(CustomError{
                     err_type: ErrorType::WrittingError,
-                    err_content: "failure to write command to TPM",
+                    err_content: "failure to write command to TPM".to_string(),
                 })
             }
         }
