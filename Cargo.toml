@@ -4,5 +4,5 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-windows = { version = "0.62.2", features = ["Win32_Security_Tpm"] }
+windows = { version = "0.62.2", features = ["Win32_Security"] }
 zerocopy = {version="0.8.56", features=["derive"]}
