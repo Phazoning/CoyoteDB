@@ -37,10 +37,7 @@ impl WindowsTPM{
 
         unsafe {
             Tbsi_Context_Create(&params as *const _ as *const _, &mut local_context)
-                .map_err(|e| CustomError {
-                    err_type: ErrorType::PlatformError,
-                    err_content: e.to_string(),
-                })?;
+                .map_err(|e| e)?;
         }
 
         self.context = local_context;
