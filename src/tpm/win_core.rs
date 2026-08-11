@@ -1,4 +1,3 @@
-use windows::Win32::Security::Tpm::*;
 use windows::Win32::System::TpmBaseServices::{TBS_COMMAND_LOCALITY_ZERO, TBS_COMMAND_PRIORITY_NORMAL, TBS_CONTEXT_PARAMS2, Tbsi_Context_Create, Tbsip_Submit_Command};
 use crate::buffer::buffer::Buffer;
 use crate::errors::errors::{ErrorType, CustomError};
