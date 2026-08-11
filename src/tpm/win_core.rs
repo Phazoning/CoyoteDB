@@ -14,18 +14,21 @@ impl WindowsTPM{
         let mut response_size = response.len() as u32;
 
         unsafe {
-            Tbsip_Submit_Command(
+            let written = Tbsip_Submit_Command(
                 self.context,
                 TBS_COMMAND_LOCALITY_ZERO,
                 TBS_COMMAND_PRIORITY_NORMAL,
-                command.get_self_buffer().as_ptr(),
-                command.get_self_buffer().len() as u32,
+                command.get_self_buffer(),
                 response.as_mut_ptr(),
                 &mut response_size,
-            ).map_err(|e| CustomError {
-                err_type: ErrorType::WrittingError,
-                err_content: e.to_string()
-            })?;
+            );
+
+            if written = 0 {
+                return Err(CustomError{
+                    err_type: ErrorType::WrittingError,
+                    err_content: "failure to write command to TPM",
+                })
+            }
         }
 
     response.truncate(response_size as usize);
@@ -36,8 +39,7 @@ impl WindowsTPM{
         let params = TBS_CONTEXT_PARAMS2 { version: 2, ..Default::default() };
 
         unsafe {
-            Tbsi_Context_Create(&params as *const _ as *const _, &mut local_context)
-                .map_err(|e| e)?;
+            Tbsi_Context_Create(&params as *const _ as *const _, &mut local_context);
         }
 
         self.context = local_context;
@@ -55,7 +57,7 @@ impl TPM {
 
         let mut platform= Box::new(WindowsTPM{context: std::ptr::null_mut()});
         
-        platform.load_platform().map_err(|e| CustomError { err_type: ErrorType::PlatformError, err_content: e.to_string() })?;
+        platform.load_platform().map_err(|e| e)?;
 
         let tpm_device = TPM{platform: platform};
 
