@@ -41,7 +41,7 @@ impl WindowsTPM{
     }
     fn load_platform(&mut self) -> Result<(), CustomError>{
         let mut local_context = std::ptr::null_mut();
-        let params = TBS_CONTEXT_PARAMS2 { version: 2, requestRaw: 1, ..Default::default() };
+        let params = TBS_CONTEXT_PARAMS2 { version: 2, requestraw: 1, ..Default::default() };
 
         unsafe {
             let result = Tbsi_Context_Create(&params as *const _ as *const _, &mut local_context);
