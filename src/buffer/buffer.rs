@@ -61,4 +61,10 @@ impl Buffer {
 
         return buf;
     }
+
+    pub fn hex_string(&self) -> String {
+        let hex: String = self.b.iter().map(|b| format!("{:02x}", b)).collect();
+
+        return hex;
+    }
 }

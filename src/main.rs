@@ -25,7 +25,7 @@ fn main() {
 
     match num {
         Ok(rand_num) => {
-            println!("{:?}", rand_num.get_self_buffer())
+            println!("{}", rand_num.hex_string())
         }
         Err(error) => {
             println!("Error:");

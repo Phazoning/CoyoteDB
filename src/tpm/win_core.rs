@@ -11,7 +11,7 @@ struct WindowsTPM{
 impl WindowsTPM{
     fn execute_command(&mut self, command: Buffer) -> Result<Buffer, CustomError> {
         println!("Executing command");
-        println!("Command body: {:?}", &command.get_self_buffer());
+        println!("Command body: {}", &command.hex_string());
         let mut response = vec![0u8; 4096];
         let mut response_size = response.len() as u32;
 
