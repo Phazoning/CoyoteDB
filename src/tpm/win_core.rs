@@ -1,4 +1,11 @@
-use windows::Win32::System::TpmBaseServices::{TBS_COMMAND_LOCALITY_ZERO, TBS_COMMAND_PRIORITY_NORMAL, TBS_CONTEXT_PARAMS2, Tbsi_Context_Create, Tbsip_Submit_Command};
+use windows::Win32::System::TpmBaseServices::{
+    TBS_COMMAND_LOCALITY_ZERO, 
+    TBS_COMMAND_PRIORITY_NORMAL, 
+    TBS_CONTEXT_PARAMS2, 
+    Tbsi_Context_Create, 
+    Tbsip_Submit_Command,
+    TBS_CONTEXT_PARAMS2_0
+};
 use crate::buffer::buffer::Buffer;
 use crate::errors::errors::{ErrorType, CustomError};
 use super::command_functions as c_func;
@@ -41,7 +48,9 @@ impl WindowsTPM{
     }
     fn load_platform(&mut self) -> Result<(), CustomError>{
         let mut local_context = std::ptr::null_mut();
-        let params = TBS_CONTEXT_PARAMS2 { version: 2, requestraw: 1, ..Default::default() };
+        let params = TBS_CONTEXT_PARAMS2 { version: 2, Anonymous: TBS_CONTEXT_PARAMS2_0 {
+        asUINT32: 8, // bit 3 set = requestraw (1 << 3 = 8)
+    } };
 
         unsafe {
             let result = Tbsi_Context_Create(&params as *const _ as *const _, &mut local_context);
