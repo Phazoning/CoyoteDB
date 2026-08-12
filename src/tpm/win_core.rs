@@ -49,7 +49,7 @@ impl WindowsTPM{
             if result != 0 {
                 return Err(CustomError{
                     err_type: ErrorType::PlatformError,
-                    err_content: "failed to create context"
+                    err_content: "failed to create context".to_string()
                 })
             }
         }
