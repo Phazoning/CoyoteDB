@@ -26,7 +26,7 @@ impl WindowsTPM{
                 &mut response_size,
             );
 
-            if written == 0 {
+            if written != 0 {
                 return Err(CustomError{
                     err_type: ErrorType::WrittingError,
                     err_content: "failure to write command to TPM".to_string(),
@@ -44,7 +44,14 @@ impl WindowsTPM{
         let params = TBS_CONTEXT_PARAMS2 { version: 2, ..Default::default() };
 
         unsafe {
-            Tbsi_Context_Create(&params as *const _ as *const _, &mut local_context);
+            let result = Tbsi_Context_Create(&params as *const _ as *const _, &mut local_context);
+
+            if result != 0 {
+                return Err(CustomError{
+                    err_type: ErrorType::PlatformError,
+                    err_content: "failed to create context"
+                })
+            }
         }
 
         self.context = local_context;
