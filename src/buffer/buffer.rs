@@ -1,5 +1,4 @@
-use crate::aux_types::uints::*;
-use zerocopy::{IntoBytes, Immutable};
+use zerocopy::{IntoBytes, Immutable, byteorder::big_endian::{U16, U32, U64, U128}};
 
 pub struct Buffer {
     b: Vec<u8>
@@ -15,29 +14,22 @@ impl Buffer {
         self.b.extend_from_slice(target.as_bytes())
     }
 
-    pub fn add_u8(&mut self, target: &Uint8){
+
+    pub fn add_u16(&mut self, target: &U16){
         self.add_uint(target)
     }
 
-    pub fn add_u16(&mut self, target: &Uint16){
+    pub fn add_u32(&mut self, target: &U32){
         self.add_uint(target)
     }
 
-    pub fn add_u32(&mut self, target: &Uint32){
+    pub fn add_u64(&mut self, target: &U64){
         self.add_uint(target)
     }
 
-    pub fn add_u64(&mut self, target: &Uint64){
+    pub fn add_u128(&mut self, target: &U128){
         self.add_uint(target)
     }
-
-    pub fn add_u128(&mut self, target: &Uint128){
-        self.add_uint(target)
-    }
-    pub fn add_u256(&mut self, target: &Uint256){
-        self.add_uint(target)
-    }
-
     pub fn add_buffer(&mut self, target: &Vec<u8>){
         self.b.extend_from_slice(target)
     }

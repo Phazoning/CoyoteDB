@@ -1,7 +1,6 @@
 mod tpm;
 mod buffer;
 mod errors;
-mod aux_types;
 
 fn main() {
     println!("Loading device");
