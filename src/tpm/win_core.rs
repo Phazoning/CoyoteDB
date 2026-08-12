@@ -10,10 +10,13 @@ struct WindowsTPM{
 
 impl WindowsTPM{
     fn execute_command(&mut self, command: Buffer) -> Result<Buffer, CustomError> {
+        println!("Executing command");
+        println!("Command body: {:?}", &command);
         let mut response = vec![0u8; 4096];
         let mut response_size = response.len() as u32;
 
         unsafe {
+            println!("Writting command to TPM");
             let written = Tbsip_Submit_Command(
                 self.context,
                 TBS_COMMAND_LOCALITY_ZERO,
@@ -30,7 +33,9 @@ impl WindowsTPM{
                 })
             }
         }
-
+    
+    println!("Response: {:?}", &response);
+    println!("Response size: {}", &response_size);
     response.truncate(response_size as usize);
     Ok(Buffer::from_vec(response))
     }

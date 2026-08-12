@@ -4,10 +4,12 @@ mod errors;
 mod aux_types;
 
 fn main() {
+    println!("Loading device");
     let tpm_device = tpm::TPM::new();
     let mut tpm_loaded: tpm::TPM;
     match tpm_device{
         Ok(t) => {
+            println!("Device loaded");
             tpm_loaded = t;
         }
 
@@ -18,6 +20,7 @@ fn main() {
         }
     }
 
+    println!("Passing random number command to TPM");
     let num = tpm_loaded.generate_random_number();
 
     match num {
