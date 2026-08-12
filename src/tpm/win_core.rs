@@ -47,6 +47,7 @@ impl WindowsTPM{
             let result = Tbsi_Context_Create(&params as *const _ as *const _, &mut local_context);
 
             if result != 0 {
+                println!("TBS error code: 0x{:08X}", result);
                 return Err(CustomError{
                     err_type: ErrorType::PlatformError,
                     err_content: "failed to create context".to_string()
