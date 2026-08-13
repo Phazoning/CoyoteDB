@@ -2,19 +2,45 @@ use crate::buffer::buffer::Buffer;
 use crate::errors::errors::{ErrorType, CustomError};
 use super::command_functions as c_func;
 use std::{fs::{OpenOptions, File}, io::{Read, Write}};
+use std::thread;
+use std::time::Duration;
 
+
+enum WaitTimes {
+    Short,
+    Long
+}
 
 struct LinuxTPM {
     device: File,
 }
 
 impl LinuxTPM {
-    fn execute_command(&mut self, command: Buffer) -> Result<Buffer, CustomError> {
+    fn execute_command(&mut self, command: Buffer, wait_time: WaitTimes) -> Result<Buffer, CustomError> {
         let comm_slice: &[u8] = &command.get_self_buffer();
         self.device.write(comm_slice).map_err(|e| CustomError{
             err_type: ErrorType::WrittingError,
             err_content: e.to_string(),
         })?;
+
+        self.device.flush().map_err(|e| CustomError {
+        err_type: ErrorType::WrittingError,
+        err_content: e.to_string(),
+        })?;
+
+        let w_time_ms: u64;
+
+        match wait_time {
+            WaitTimes::Short => {
+                w_time_ms = 100;
+            }
+
+            WaitTimes::Long => {
+                w_time_ms = 500;
+            }
+        }
+
+        thread::sleep(Duration::from_millis(w_time_ms));
 
         let mut response = vec![0u8; 4096];
         let n = self.device.read(&mut response)
@@ -70,7 +96,7 @@ impl TPM {
     }
 
     fn execute(&mut self, buffer: Buffer) -> Result<Buffer, CustomError> {
-        return self.platform.execute_command(buffer)
+        return self.platform.execute_command(buffer, WaitTimes::Short)
     }
     
     pub fn generate_random_number(&mut self) -> Result<Buffer, CustomError>{
