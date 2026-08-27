@@ -1,4 +1,4 @@
-use crate::buffer::buffer::Buffer;
+use crate::{buffer::buffer::Buffer, errors::errors::CustomError};
 use super::definitions::{TPM_NO_SESSIONS_HEADER, TPM_CC_GETRANDOMNUMBER};
 use zerocopy::byteorder::big_endian::{U16, U32, U64, U128};
 
@@ -14,6 +14,8 @@ pub fn generate_random_number_command() -> Buffer {
     let cmd = generate_command_no_sessions(body);
     return cmd;
 }
+
+
 
 fn generate_command_no_sessions(body: Buffer) -> Buffer {
     let mut command = Buffer::new();

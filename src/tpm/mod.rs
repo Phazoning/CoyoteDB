@@ -1,6 +1,7 @@
-
+mod aux_functions;
 mod definitions;
 mod command_functions;
+mod responses;
 
 #[cfg(target_os = "windows")]
 pub mod win_core;
