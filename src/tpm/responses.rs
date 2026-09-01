@@ -31,6 +31,7 @@ mod tests {
     use super::{RandomResponse};
     use crate::tpm::definitions::{TPM_NO_SESSIONS_HEADER};
 
+    #[test]
     fn test_parse_random_number_response(){
         let compare_response = RandomResponse{
             tag: TPM_NO_SESSIONS_HEADER,

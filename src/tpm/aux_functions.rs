@@ -4,15 +4,16 @@ pub fn parse_return_code(code_bytes: Vec<u8>) -> ReturnCode {
     let return_bin = u32::from_be_bytes(code_bytes.as_slice().try_into().unwrap());
     
     let format = (&return_bin >> 7) & 1 == 1;
-    let is_special = (&return_bin >> 8) & 0 == 1;
+    let is_special = (&return_bin >> 8) & 1 == 0;
 
     let mut rc_hex: u16;
     let code_format: u16;
 
-    rc_hex = (return_bin & 0x3f) as u16;
     if !format {
+        rc_hex = (return_bin & 0x7f) as u16;
         code_format = TPM_RC_VER1;
     } else {
+        rc_hex = (return_bin & 0x3f) as u16;
         code_format = TPM_RC_FMT1;
     }
 
@@ -60,6 +61,14 @@ fn rc_match_format_zero(code_hex: u16) -> ReturnCode {
 
         0x103 => {
             ret = ReturnCode::Sequence
+        }
+
+        0x10b => {
+            ret = ReturnCode::Private
+        }
+
+        0x119 => {
+            ret = ReturnCode::HMAC
         }
 
         0x120 => {
@@ -303,9 +312,9 @@ fn rc_match_format_one(code_hex: u16) -> ReturnCode {
 mod tests{
     use crate::tpm::definitions::ReturnCode;
 
-use super::parse_return_code;
+    use super::parse_return_code;
 
-    //vec![0x00, 0x00, 0x00, 0x00];
+    #[test]
     fn test_parse_rc_success(){
         let rc = vec![0x00, 0x00, 0x00, 0x00];
 
@@ -314,7 +323,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::Success, parsed_rc)
     }
 
-    //vec![0x00, 0x00, 0x00, 0x1e];
+    #[test]
     fn test_parse_rc_bad_tag(){
         let rc = vec![0x00, 0x00, 0x00, 0x1e];
 
@@ -323,7 +332,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::BadTag, parsed_rc)
     }
 
-    //vec![0x00, 0x00, 0x01, 0x00];
+    #[test]
     fn test_parse_rc_initialize(){
         let rc = vec![0x00, 0x00, 0x01, 0x00];
 
@@ -332,7 +341,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::Initialize, parsed_rc)
     }
 
-    //vec![0x00, 0x00, 0x01, 0x01];    
+    #[test]    
     fn test_parse_rc_failure(){
         let rc = vec![0x00, 0x00, 0x01, 0x01];
 
@@ -341,7 +350,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::Failure, parsed_rc)
     }
 
-    //vec![0x00, 0x00, 0x01, 0x03];
+    #[test]
     fn test_parse_rc_sequence(){
         let rc = vec![0x00, 0x00, 0x01, 0x03];
 
@@ -350,7 +359,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::Sequence, parsed_rc)
     }
 
-    //vec![0x00, 0x00, 0x01, 0x0b];
+    #[test]
     fn test_parse_rc_private(){
         let rc = vec![0x00, 0x00, 0x01, 0x0b];
 
@@ -359,7 +368,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::Private, parsed_rc)
     }
 
-    //vec![0x00, 0x00, 0x01, 0x19];
+    #[test]
     fn test_parse_rc_hmac(){
         let rc = vec![0x00, 0x00, 0x01, 0x19];
 
@@ -368,7 +377,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::HMAC, parsed_rc)
     }
 
-    //vec![0x00, 0x00, 0x01, 0x20];
+    #[test]
     fn test_parse_rc_disabled(){
         let rc = vec![0x00, 0x00, 0x01, 0x20];
 
@@ -377,7 +386,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::Disabled, parsed_rc)
     }
 
-    //vec![0x00, 0x00, 0x01, 0x21];
+    #[test]
     fn test_parse_rc_exclusive(){
         let rc = vec![0x00, 0x00, 0x01, 0x21];
 
@@ -386,7 +395,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::Exclusive, parsed_rc)
     }
 
-    //vec![0x00, 0x00, 0x01, 0x24];
+    #[test]
     fn test_parse_rc_auth_type(){
         let rc = vec![0x00, 0x00, 0x01, 0x24];
 
@@ -395,7 +404,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::AuthType, parsed_rc)
     }
 
-    //vec![0x00, 0x00, 0x01, 0x25];
+    #[test]
     fn test_parse_rc_auth_missing(){
         let rc = vec![0x00, 0x00, 0x01, 0x25];
 
@@ -404,7 +413,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::AuthMissing, parsed_rc)
     }
 
-    //vec![0x00, 0x00, 0x01, 0x26];
+    #[test]
     fn test_parse_rc_policy(){
         let rc = vec![0x00, 0x00, 0x01, 0x26];
 
@@ -413,7 +422,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::Policy, parsed_rc)
     }
 
-    //vec![0x00, 0x00, 0x01, 0x27];
+    #[test]
     fn test_parse_rc_pcr(){
         let rc = vec![0x00, 0x00, 0x01, 0x27];
 
@@ -422,7 +431,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::PCR, parsed_rc)
     }
 
-    //vec![0x00, 0x00, 0x01, 0x28];
+    #[test]
     fn test_parse_rc_pcr_changed(){
         let rc = vec![0x00, 0x00, 0x01, 0x28];
 
@@ -431,7 +440,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::PCRChanged, parsed_rc)
     }
 
-    //vec![0x00, 0x00, 0x01, 0x2d];
+    #[test]
     fn test_parse_rc_upgrade(){
         let rc = vec![0x00, 0x00, 0x01, 0x2d];
 
@@ -440,7 +449,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::Upgrade, parsed_rc)
     }
 
-    //vec![0x00, 0x00, 0x01, 0x2e];
+    #[test]
     fn test_parse_rc_too_many_contexts(){
         let rc = vec![0x00, 0x00, 0x01, 0x2e];
 
@@ -449,7 +458,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::TooManyContexts, parsed_rc)
     }
 
-    //vec![0x00, 0x00, 0x01, 0x2f];
+    #[test]
     fn test_parse_rc_auth_unavaliable(){
         let rc = vec![0x00, 0x00, 0x01, 0x2f];
 
@@ -458,7 +467,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::AuthUnavaliable, parsed_rc)
     }
 
-    //vec![0x00, 0x00, 0x01, 0x30];
+    #[test]
     fn test_parse_rc_reboot(){
         let rc = vec![0x00, 0x00, 0x01, 0x30];
 
@@ -467,7 +476,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::Reboot, parsed_rc)
     }
 
-    //vec![0x00, 0x00, 0x01, 0x31];
+    #[test]
     fn test_parse_rc_unbalanced(){
         let rc = vec![0x00, 0x00, 0x01, 0x31];
 
@@ -476,7 +485,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::Unbalanced, parsed_rc)
     }
 
-    //vec![0x00, 0x00, 0x01, 0x42];
+    #[test]
     fn test_parse_rc_command_size(){
         let rc = vec![0x00, 0x00, 0x01, 0x42];
 
@@ -485,7 +494,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::CommandSize, parsed_rc)
     }
 
-    //vec![0x00, 0x00, 0x01, 0x43];
+    #[test]
     fn test_parse_rc_command_code(){
         let rc = vec![0x00, 0x00, 0x01, 0x43];
 
@@ -494,7 +503,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::CommandCode, parsed_rc)
     }
 
-    //vec![0x00, 0x00, 0x01, 0x44];
+    #[test]
     fn test_parse_rc_authsize(){
         let rc = vec![0x00, 0x00, 0x01, 0x44];
 
@@ -503,7 +512,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::AuthSize, parsed_rc)
     }
 
-    //vec![0x00, 0x00, 0x01, 0x45];
+    #[test]
     fn test_parse_rc_auth_context(){
         let rc = vec![0x00, 0x00, 0x01, 0x45];
 
@@ -512,7 +521,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::AuthContext, parsed_rc)
     }
 
-    //vec![0x00, 0x00, 0x01, 0x46];
+    #[test]
     fn test_parse_rc_nv_range(){
         let rc = vec![0x00, 0x00, 0x01, 0x46];
 
@@ -521,7 +530,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::NVRange, parsed_rc)
     }
 
-    //vec![0x00, 0x00, 0x01, 0x47];
+    #[test]
     fn test_parse_rc_nv_size(){
         let rc = vec![0x00, 0x00, 0x01, 0x47];
 
@@ -530,7 +539,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::NVSize, parsed_rc)
     }
 
-    //vec![0x00, 0x00, 0x01, 0x48];
+    #[test]
     fn test_parse_rc_nv_locked(){
         let rc = vec![0x00, 0x00, 0x01, 0x48];
 
@@ -539,7 +548,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::NVLocked, parsed_rc)
     }
 
-    //vec![0x00, 0x00, 0x01, 0x49];
+    #[test]
     fn test_parse_rc_nv_authorization(){
         let rc = vec![0x00, 0x00, 0x01, 0x49];
 
@@ -548,7 +557,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::NVAuthorization, parsed_rc)
     }
 
-    //vec![0x00, 0x00, 0x01, 0x4a];
+    #[test]
     fn test_parse_rc_nv_uninitialized(){
         let rc = vec![0x00, 0x00, 0x01, 0x4a];
 
@@ -557,7 +566,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::NVUninitialized, parsed_rc)
     }
 
-    //vec![0x00, 0x00, 0x01, 0x4b];
+    #[test]
     fn test_parse_rc_nv_space(){
         let rc = vec![0x00, 0x00, 0x01, 0x4b];
 
@@ -566,7 +575,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::NVSpace, parsed_rc)
     }
     
-    //vec![0x00, 0x00, 0x01, 0x4c];
+    #[test]
     fn test_parse_rc_nv_defined(){
         let rc = vec![0x00, 0x00, 0x01, 0x4c];
 
@@ -575,70 +584,70 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::NVDefined, parsed_rc)
     }
     
-    //vec![0x00, 0x00, 0x01, 0x5a];
+    #[test]
     fn test_parse_rc_bad_context(){
-        let rc = vec![0x00, 0x00, 0x01, 0x5a];
+        let rc = vec![0x00, 0x00, 0x01, 0x50];
 
         let parsed_rc = parse_return_code(rc);
 
         assert_eq!(ReturnCode::BadContext, parsed_rc)
     }
     
-    //vec![0x00, 0x00, 0x01, 0x5b];
+    #[test]
     fn test_parse_rc_cphash(){
-        let rc = vec![0x00, 0x00, 0x01, 0x5b];
+        let rc = vec![0x00, 0x00, 0x01, 0x51];
 
         let parsed_rc = parse_return_code(rc);
 
         assert_eq!(ReturnCode::CPHash, parsed_rc)
     }
     
-    //vec![0x00, 0x00, 0x01, 0x5c];
+    #[test]
     fn test_parse_rc_parent(){
-        let rc = vec![0x00, 0x00, 0x01, 0x5c];
+        let rc = vec![0x00, 0x00, 0x01, 0x52];
 
         let parsed_rc = parse_return_code(rc);
 
         assert_eq!(ReturnCode::Parent, parsed_rc)
     }
     
-    //vec![0x00, 0x00, 0x01, 0x5d];
+    #[test]
     fn test_parse_rc_needs_test(){
-        let rc = vec![0x00, 0x00, 0x01, 0x5d];
+        let rc = vec![0x00, 0x00, 0x01, 0x53];
 
         let parsed_rc = parse_return_code(rc);
 
         assert_eq!(ReturnCode::NeedsTest, parsed_rc)
     }
     
-    //vec![0x00, 0x00, 0x01, 0x5e];
+    #[test]
     fn test_parse_rc_no_result(){
-        let rc = vec![0x00, 0x00, 0x01, 0x5e];
+        let rc = vec![0x00, 0x00, 0x01, 0x54];
 
         let parsed_rc = parse_return_code(rc);
 
         assert_eq!(ReturnCode::NoResult, parsed_rc)
     }
     
-    //vec![0x00, 0x00, 0x01, 0x5f];
+    #[test]
     fn test_parse_rc_sensitive(){
-        let rc = vec![0x00, 0x00, 0x01, 0x5f];
+        let rc = vec![0x00, 0x00, 0x01, 0x55];
 
         let parsed_rc = parse_return_code(rc);
 
         assert_eq!(ReturnCode::Sensitive, parsed_rc)
     }
     
-    //vec![0x00, 0x00, 0x01, 0x60];
+    #[test]
     fn test_parse_rc_read_only(){
-        let rc = vec![0x00, 0x00, 0x01, 0x60];
+        let rc = vec![0x00, 0x00, 0x01, 0x56];
 
         let parsed_rc = parse_return_code(rc);
 
         assert_eq!(ReturnCode::ReadOnly, parsed_rc)
     }
     
-    //vec![0x00, 0x00, 0x01, 0x81];
+    #[test]
     fn test_parse_rc_asymmetric(){
         let rc = vec![0x00, 0x00, 0x01, 0x81];
 
@@ -647,7 +656,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::Asymmetric, parsed_rc)
     }
     
-    //vec![0x00, 0x00, 0x01, 0x82];
+    #[test]
     fn test_parse_rc_attributes(){
         let rc = vec![0x00, 0x00, 0x01, 0x82];
 
@@ -656,7 +665,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::Attributes, parsed_rc)
     }
     
-    //vec![0x00, 0x00, 0x01, 0x83];
+    #[test]
     fn test_parse_rc_hash(){
         let rc = vec![0x00, 0x00, 0x01, 0x83];
 
@@ -665,7 +674,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::Hash, parsed_rc)
     }
     
-    //vec![0x00, 0x00, 0x01, 0x84];
+    #[test]
     fn test_parse_rc_value(){
         let rc = vec![0x00, 0x00, 0x01, 0x84];
 
@@ -674,7 +683,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::Value, parsed_rc)
     }
 
-    //vec![0x00, 0x00, 0x01, 0x85];
+    #[test]
     fn test_parse_rc_hierarchy(){
         let rc = vec![0x00, 0x00, 0x01, 0x85];
 
@@ -683,7 +692,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::Hierarchy, parsed_rc)
     }
     
-    //vec![0x00, 0x00, 0x01, 0x86];
+    #[test]
     fn test_parse_rc_key_size(){
         let rc = vec![0x00, 0x00, 0x01, 0x87];
 
@@ -692,7 +701,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::KeySize, parsed_rc)
     }
 
-    //vec![0x00, 0x00, 0x01, 0x87];
+    #[test]
     fn test_parse_rc_mgf(){
         let rc = vec![0x00, 0x00, 0x01, 0x88];
 
@@ -701,7 +710,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::MGF, parsed_rc)
     }
     
-    //vec![0x00, 0x00, 0x01, 0x88];
+    #[test]
     fn test_parse_rc_mode(){
         let rc = vec![0x00, 0x00, 0x01, 0x89];
 
@@ -710,7 +719,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::Mode, parsed_rc)
     }
 
-    //vec![0x00, 0x00, 0x01, 0x89];
+    #[test]
     fn test_parse_rc_type(){
         let rc = vec![0x00, 0x00, 0x01, 0x8a];
 
@@ -719,7 +728,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::Type, parsed_rc)
     }
 
-    //vec![0x00, 0x00, 0x01, 0x8a];
+    #[test]
     fn test_parse_rc_handle(){
         let rc = vec![0x00, 0x00, 0x01, 0x8b];
 
@@ -728,7 +737,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::Handle, parsed_rc)
     }
 
-    //vec![0x00, 0x00, 0x01, 0x8b];
+    #[test]
     fn test_parse_rc_kdf(){
         let rc = vec![0x00, 0x00, 0x01, 0x8c];
 
@@ -737,7 +746,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::KDF, parsed_rc)
     }
 
-    //vec![0x00, 0x00, 0x01, 0x8c];
+    #[test]
     fn test_parse_rc_range(){
         let rc = vec![0x00, 0x00, 0x01, 0x8d];
 
@@ -746,7 +755,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::Range, parsed_rc)
     }
 
-    //vec![0x00, 0x00, 0x01, 0x8d];
+    #[test]
     fn test_parse_rc_auth_fail(){
         let rc = vec![0x00, 0x00, 0x01, 0x8e];
 
@@ -755,7 +764,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::AuthFail, parsed_rc)
     }
 
-    //vec![0x00, 0x00, 0x01, 0x8e];
+    #[test]
     fn test_parse_rc_nonce(){
         let rc = vec![0x00, 0x00, 0x01, 0x8f];
 
@@ -764,7 +773,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::Nonce, parsed_rc)
     }
 
-    //vec![0x00, 0x00, 0x01, 0x8f];
+    #[test]
     fn test_parse_rc_pp(){
         let rc = vec![0x00, 0x00, 0x01, 0x90];
 
@@ -773,7 +782,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::PP, parsed_rc)
     }
 
-    //vec![0x00, 0x00, 0x01, 0x90];
+    #[test]
     fn test_parse_rc_scheme(){
         let rc = vec![0x00, 0x00, 0x01, 0x92];
 
@@ -782,7 +791,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::Scheme, parsed_rc)
     }
 
-    //vec![0x00, 0x00, 0x01, 0x92];
+    #[test]
     fn test_parse_rc_size(){
         let rc = vec![0x00, 0x00, 0x01, 0x95];
 
@@ -791,7 +800,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::Size, parsed_rc)
     }
 
-    //vec![0x00, 0x00, 0x01, 0x95];
+    #[test]
     fn test_parse_rc_symmetric(){
         let rc = vec![0x00, 0x00, 0x01, 0x96];
 
@@ -800,7 +809,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::Symmetric, parsed_rc)
     }
 
-    //vec![0x00, 0x00, 0x01, 0x96];
+    #[test]
     fn test_parse_rc_tag(){
         let rc = vec![0x00, 0x00, 0x01, 0x97];
 
@@ -809,7 +818,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::Tag, parsed_rc)
     }
 
-    //vec![0x00, 0x00, 0x01, 0x97];
+    #[test]
     fn test_parse_rc_selector(){
         let rc = vec![0x00, 0x00, 0x01, 0x98];
 
@@ -818,7 +827,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::Selector, parsed_rc)
     }
 
-    //vec![0x00, 0x00, 0x01, 0x98];
+    #[test]
     fn test_parse_rc_insufficient(){
         let rc = vec![0x00, 0x00, 0x01, 0x9a];
 
@@ -827,7 +836,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::Insufficient, parsed_rc)
     }
 
-    //vec![0x00, 0x00, 0x01, 0x9a];
+    #[test]
     fn test_parse_rc_signature(){
         let rc = vec![0x00, 0x00, 0x01, 0x9b];
 
@@ -836,7 +845,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::Signature, parsed_rc)
     }
 
-    //vec![0x00, 0x00, 0x01, 0x9b];
+    #[test]
     fn test_parse_rc_key(){
         let rc = vec![0x00, 0x00, 0x01, 0x9c];
 
@@ -845,7 +854,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::Key, parsed_rc)
     }
 
-    //vec![0x00, 0x00, 0x01, 0x9c];
+    #[test]
     fn test_parse_rc_policy_fail(){
         let rc = vec![0x00, 0x00, 0x01, 0x9d];
 
@@ -854,7 +863,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::PolicyFail, parsed_rc)
     }
 
-    //vec![0x00, 0x00, 0x01, 0x9d];
+    #[test]
     fn test_parse_rc_integrity(){
         let rc = vec![0x00, 0x00, 0x01, 0x9f];
 
@@ -863,7 +872,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::Integrity, parsed_rc)
     }
 
-    //vec![0x00, 0x00, 0x01, 0x9f];
+    #[test]
     fn test_parse_rc_ticket(){
         let rc = vec![0x00, 0x00, 0x01, 0xa0];
 
@@ -872,7 +881,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::Ticket, parsed_rc)
     }
 
-    //vec![0x00, 0x00, 0x01, 0xa0];
+    #[test]
     fn test_parse_rc_reserverd_bits(){
         let rc = vec![0x00, 0x00, 0x01, 0xa1];
 
@@ -881,7 +890,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::ReservedBits, parsed_rc)
     }
     
-    //vec![0x00, 0x00, 0x01, 0xa1];
+    #[test]
     fn test_parse_rc_bad_auth(){
         let rc = vec![0x00, 0x00, 0x01, 0xa2];
 
@@ -890,7 +899,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::BadAuth, parsed_rc)
     }
     
-    //vec![0x00, 0x00, 0x01, 0xa2];
+    #[test]
     fn test_parse_rc_expired(){
         let rc = vec![0x00, 0x00, 0x01, 0xa3];
 
@@ -899,7 +908,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::Expired, parsed_rc)
     }
     
-    //vec![0x00, 0x00, 0x01, 0xa3];
+    #[test]
     fn test_parse_rc_policy_cc(){
         let rc = vec![0x00, 0x00, 0x01, 0xa4];
 
@@ -908,7 +917,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::PolicyCC, parsed_rc)
     }
 
-    //vec![0x00, 0x00, 0x01, 0xa4];    
+    #[test]    
     fn test_parse_rc_binding(){
         let rc = vec![0x00, 0x00, 0x01, 0xa5];
 
@@ -917,7 +926,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::Binding, parsed_rc)
     }
     
-    //vec![0x00, 0x00, 0x01, 0xa5];
+    #[test]
     fn test_parse_rc_curve(){
         let rc = vec![0x00, 0x00, 0x01, 0xa6];
 
@@ -926,7 +935,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::Curve, parsed_rc)
     }
     
-    //vec![0x00, 0x00, 0x01, 0xa6];
+    #[test]
     fn test_parse_rc_ecc_point(){
         let rc = vec![0x00, 0x00, 0x01, 0xa7];
 
@@ -935,7 +944,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::EccPoint, parsed_rc)
     }
     
-    //vec![0x00, 0x00, 0x01, 0xa7];
+    #[test]
     fn test_parse_rc_fw_limited(){
         let rc = vec![0x00, 0x00, 0x01, 0xa8];
 
@@ -944,7 +953,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::FWLimited, parsed_rc)
     }
     
-    //vec![0x00, 0x00, 0x01, 0xa8];
+    #[test]
     fn test_parse_rc_svn_limited(){
         let rc = vec![0x00, 0x00, 0x01, 0xa9];
 
@@ -953,7 +962,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::SVNLimited, parsed_rc)
     }
     
-    //vec![0x00, 0x00, 0x01, 0xa9];
+    #[test]
     fn test_parse_rc_channel(){
         let rc = vec![0x00, 0x00, 0x01, 0xb0];
 
@@ -962,7 +971,7 @@ use super::parse_return_code;
         assert_eq!(ReturnCode::Channel, parsed_rc)
     }
     
-    //vec![0x00, 0x00, 0x01, 0xb0];
+    #[test]
     fn test_parse_rc_channel_key(){
         let rc = vec![0x00, 0x00, 0x01, 0xb1];
 
