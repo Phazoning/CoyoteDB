@@ -1,12 +1,12 @@
-mod tpm;
 mod buffer;
 mod errors;
+mod tpm;
 
 fn main() {
     println!("Loading device");
     let tpm_device = tpm::TPM::new();
     let mut tpm_loaded: tpm::TPM;
-    match tpm_device{
+    match tpm_device {
         Ok(t) => {
             println!("Device loaded");
             tpm_loaded = t;
@@ -15,7 +15,7 @@ fn main() {
         Err(error) => {
             println!("Error:");
             println!("{}", error.err_content);
-            return 
+            return;
         }
     }
 

@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+textnonce = "1.0.0"
 zerocopy = {version="0.8.56", features=["derive"]}
 
 [target.'cfg(windows)'.dependencies]

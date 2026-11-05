@@ -1,3 +1,4 @@
+#[derive(Debug)]
 pub enum ErrorType {
     TpmCommandError,
     TpmAuthError,
@@ -6,9 +7,11 @@ pub enum ErrorType {
     QueryExecutionError,
     WrittingError,
     ReadingError,
+    TPMError,
 }
 
-pub struct CustomError{
+#[derive(Debug)]
+pub struct CustomError {
     pub err_type: ErrorType,
     pub err_content: String,
 }
