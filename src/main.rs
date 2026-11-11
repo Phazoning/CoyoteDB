@@ -19,16 +19,53 @@ fn main() {
         }
     }
 
-    println!("Passing random number command to TPM");
-    let num = tpm_loaded.generate_random_number();
+    let primary_response = match tpm_loaded.create_primary() {
+        Ok(response) => response,
+        Err(error) => {
+            println!("Error:");
+            println!("{}", error.err_content);
+            return;
+        }
+    };
 
-    match num {
-        Ok(rand_num) => {
-            println!("{}", rand_num.hex_string())
+
+    let sealed_data = b"AAAABBBBCCCCC";
+
+    let sealed_response = match tpm_loaded.create_sealed(primary_response.get_object_handle(), sealed_data){
+        Ok(res) => {
+            res
         }
         Err(error) => {
             println!("Error:");
-            println!("{}", error.err_content)
+            println!("{}", error.err_content);
+            return;
         }
-    }
+    };
+
+    let loaded_response = match tpm_loaded.load_sealed(primary_response.get_object_handle(), 
+        &sealed_response.get_private(), 
+        &sealed_response.get_public()
+    ){
+        Ok(res) => {
+            res
+        }
+        Err(error) => {
+            println!("Error:");
+            println!("{}", error.err_content);
+            return;
+        }
+    };
+
+    let unsealed_response = match tpm_loaded.unseal(loaded_response.get_object_handle()){
+        Ok(res) => {
+            res
+        }
+        Err(error) => {
+            println!("Error:");
+            println!("{}", error.err_content);
+            return;
+        }
+    };
+
+    assert!(&unsealed_response == sealed_data);
 }
